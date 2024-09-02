@@ -122,7 +122,7 @@ namespace CrudStudentsApi.Controllers
 
 
             var parameters = new[]
-            {
+         {
             new SqlParameter("@opt", 3),
             new SqlParameter("@student_id", DBNull.Value),
             new SqlParameter("@first_name", student.FirstName),
@@ -166,6 +166,67 @@ namespace CrudStudentsApi.Controllers
                 response.Message = $"Error interno del servidor: {ex.Message}";
                 return StatusCode(500, response);
             }
+        }
+
+
+        //UpdateStudentData
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStudent(int id, Student student)
+        {
+
+            var response = new ApiResponse<Student>();
+
+            //Validations
+            if (id == 0)
+            {
+                response.Success = false;
+                response.Message = "El ID del estudiante es necesario para esta operación.";
+                return BadRequest(response);
+            }
+
+            var parameters = new[]
+            {
+                new SqlParameter("@opt", 4),
+                new SqlParameter("@student_id", id),
+                new SqlParameter("@first_name", (object)student.FirstName ?? DBNull.Value),
+                new SqlParameter("@middle_name", (object)student.MiddleName ?? DBNull.Value),
+                new SqlParameter("@last_name", (object)student.LastName ?? DBNull.Value),
+                new SqlParameter("@gender", (object)student.Gender ?? DBNull.Value),
+                new SqlParameter("@address_line", (object)student.AddressLine ?? DBNull.Value),
+                new SqlParameter("@city", (object)student.City ?? DBNull.Value),
+                new SqlParameter("@zip_postcode", (object)student.ZipPostcode ?? DBNull.Value),
+                new SqlParameter("@state", (object)student.State ?? DBNull.Value),
+                new SqlParameter("@email", (object)student.Email ?? DBNull.Value),
+                new SqlParameter("@email_type", (object)student.EmailType ?? DBNull.Value),
+                new SqlParameter("@phone", (object)student.Phone ?? DBNull.Value),
+                new SqlParameter("@phone_type", (object)student.PhoneType ?? DBNull.Value),
+                new SqlParameter("@country_code", (object)student.CountryCode ?? DBNull.Value),
+                new SqlParameter("@area_code", (object)student.AreaCode ?? DBNull.Value)
+                    };
+
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync("EXEC sp_student @opt, @student_id, @first_name, @middle_name, @last_name, @gender, @address_line, @city, @zip_postcode, @state, @email, @email_type, @phone, @phone_type, @country_code, @area_code", parameters);
+
+                response.Success = true;
+                response.Message = "Estudiante actualizado con éxito";
+                response.Data = student;
+
+                return Ok(response);
+            }
+            catch (SqlException ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error interno del servidor: {ex.Message}";
+                return StatusCode(500, response);
+            }
+
         }
     }
 }

@@ -103,5 +103,69 @@ namespace CrudStudentsApi.Controllers
                 return StatusCode(500, response);
             }
         }
+
+
+        //CreateStudent
+        [HttpPost]
+        public async Task<IActionResult> CreateStudent(Student student)
+        {
+
+            var response = new ApiResponse<Student>();
+
+            //Validations
+            if (student == null || string.IsNullOrWhiteSpace(student.FirstName) || string.IsNullOrWhiteSpace(student.LastName) || string.IsNullOrWhiteSpace(student.Email))
+            {
+                response.Success = false;
+                response.Message = "Datos requeridos faltantes o incompletos para crear el estudiante.";
+                return BadRequest(response);
+            }
+
+
+            var parameters = new[]
+            {
+            new SqlParameter("@opt", 3),
+            new SqlParameter("@student_id", DBNull.Value),
+            new SqlParameter("@first_name", student.FirstName),
+            new SqlParameter("@middle_name", student.MiddleName),
+            new SqlParameter("@last_name", student.LastName),
+            new SqlParameter("@gender", student.Gender),
+            new SqlParameter("@address_line", student.AddressLine),
+            new SqlParameter("@city", student.City),
+            new SqlParameter("@zip_postcode", student.ZipPostcode),
+            new SqlParameter("@state", student.State),
+            new SqlParameter("@email", student.Email),
+            new SqlParameter("@email_type", student.EmailType),
+            new SqlParameter("@phone", student.Phone),
+            new SqlParameter("@phone_type", student.PhoneType),
+            new SqlParameter("@country_code", student.CountryCode),
+            new SqlParameter("@area_code", student.AreaCode)
+        };
+
+            try
+            {
+
+                await _context.Database.ExecuteSqlRawAsync("EXEC sp_student @opt, @student_id, @first_name, @middle_name, @last_name, @gender, @address_line, @city, @zip_postcode, @state, @email, @email_type, @phone, @phone_type, @country_code, @area_code", parameters);
+
+                response.Success = true;
+                response.Message = "Estudiante creado con éxito";
+                response.Data = student;
+
+                var studentId = student.StudentId.ToString();
+
+                return Created(studentId, response);
+            }
+            catch (SqlException ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error interno del servidor: {ex.Message}";
+                return StatusCode(500, response);
+            }
+        }
     }
 }

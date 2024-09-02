@@ -226,6 +226,51 @@ namespace CrudStudentsApi.Controllers
                 response.Message = $"Error interno del servidor: {ex.Message}";
                 return StatusCode(500, response);
             }
+        }
+
+        //DeleteStudent
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteStudent(int id)
+        {
+
+            var response = new ApiResponse<int>();
+
+            //Validations
+            if (id == 0)
+            {
+                response.Success = false;
+                response.Message = "El ID del estudiante es necesario para esta operación.";
+                return BadRequest(response);
+            }
+
+
+            var parameter = new SqlParameter("@opt", 5);
+            var studentIdParam = new SqlParameter("@student_id", id);
+
+            try
+            {
+
+                await _context.Database.ExecuteSqlRawAsync("EXEC sp_student @opt, @student_id", parameter, studentIdParam);
+
+                response.Success = true;
+                response.Message = "Estudiante eliminado con éxito";
+                response.Data = id;
+
+                return Ok(response);
+
+            }
+            catch (SqlException ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+                return BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error interno del servidor: {ex.Message}";
+                return StatusCode(500, response);
+            }
 
         }
     }

@@ -85,7 +85,7 @@ namespace CrudStudentsApi.Controllers
                 }
 
                 response.Success = true;
-                response.Message = "Estudiante obtenido con éxito";
+                response.Message = "Información obtenida con éxito";
                 response.Data = student.FirstOrDefault();
 
                 return Ok(response);
